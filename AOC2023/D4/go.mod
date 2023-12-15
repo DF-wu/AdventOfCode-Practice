@@ -1,3 +1,3 @@
-module D3
+module d4
 
 go 1.21.4

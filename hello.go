@@ -19,5 +19,11 @@ func main() {
 	fmt.Println("0: ", zero) //UTF-8 : 48(Decimal)
 	fmt.Println("")
 	fmt.Println("Your input is \n%s", &inputPuzzel)
+	
+	
+	
+
+	
+
 
 }

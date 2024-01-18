@@ -25,7 +25,7 @@ func main() {
 	// p1(input)
 	t := time.Now()
 	p2(input)
-	fmt.Println(time.Since(t))
+	fmt.Println("final time use: ", time.Since(t))
 }
 
 type Reflection struct {
@@ -95,7 +95,7 @@ func p2(input string) {
 			}
 			// update object
 			reflections[len(reflections)-1] = r
-			fmt.Println(reflections[len(reflections)-1], tokenidx)
+			fmt.Println(reflections[len(reflections)-1])
 
 			// flush matrixCollection for next matrix
 			matrixCollection = []string{}
@@ -116,30 +116,43 @@ func p2(input string) {
 	// 	}
 
 	// }
-	fmt.Println("data dont.")
+	fmt.Println("data done.")
 	// let's start the reflecting
 	// The Reflections are in order. so we can iterate it.
 	// when the Reflection.titile change. we can start a new reflection
 	pivotCtr = 0
 	// set a large number ceiling
 
+	ch := make(chan int, len(seeds)/2)
+	wg := new(sync.WaitGroup)
+
 	for i := 0; i < len(seeds); i = i + 2 {
 		s := seeds[i]
 		r := seeds[i+1]
 
-		ch := make(chan int, 128)
-		wg := new(sync.WaitGroup)
-		ch <- 429496729599
-		for j := s; j < s+r; j++ {
-			wg.Add(1)
-			go p2_worker(j, ch, reflections, wg)
-			// fmt.Println("done")
-		}
+		wg.Add(1)
+		go func() {
 
-
-		wg.Wait()
+			p2_worker(s, r, ch, reflections, wg)
+		}()
 
 	}
+
+	wg.Wait()
+	close(ch)
+	localmin := 9999999999
+	resArr := []int{}
+	for i := 0; i < len(seeds)/2; i++ {
+		val := <-ch
+		resArr = append(resArr, val)
+		localmin = min(localmin, val)
+	}
+	fmt.Println(resArr)
+	// for v := range ch {
+	// 	fmt.Println(v)
+	// 	localmin = min(localmin, v)
+	// }
+	fmt.Println("!!!!!!!!!!!! ans", localmin)
 
 	// 	for _, seed := range fullSeeds {
 	// 		currCorrespond := seed
@@ -172,38 +185,41 @@ func p2(input string) {
 
 }
 
-func p2_worker(seed int, ch chan int, reflections []Reflection, wg *sync.WaitGroup) {
+func p2_worker(s int, r int, ch chan int, reflections []Reflection, wg *sync.WaitGroup) {
 	defer wg.Done()
-
 	t := time.Now()
-	currCorrespond := seed
-	// always 7 pool to use
-	// by title
+	// let's start the reflecting
+	localmin := 9999999999
+	for i := s; i < s+r; i++ {
+		currCorrespond := i
+		// always 7 pool to use
+		// by title
+		for i := 0; i < len(reflections); i++ {
+			//iter matrix
+			// flag to check if no mapping found -> direct copy
+			for _, dsr := range reflections[i].dsr_maxtrix {
+				//
+				if currCorrespond >= dsr[1] && currCorrespond < dsr[1]+dsr[2] {
+					// reflect
+					currCorrespond = currCorrespond - dsr[1] + dsr[0]
 
-	for i := 0; i < len(reflections); i++ {
-		//iter matrix
-		// flag to check if no mapping found -> direct copy
+					break
 
-		for _, dsr := range reflections[i].dsr_maxtrix {
-			if currCorrespond >= dsr[1] && currCorrespond <= dsr[1]+dsr[2] {
-				// reflect
-				offset := currCorrespond - dsr[1]
-				currCorrespond = dsr[0] + offset
-
-				break
+				}
 			}
+			// fmt.Print(" This round:", currCorrespond, ",")
 		}
+		// fmt.Println(" end :", currCorrespond)
+		localmin = min(localmin, currCorrespond)
 
-		// fmt.Println(currCorrespond)
+		// fmt.Println("final location:", currCorrespond)
+		if i%100000000 == 0 {
+			// fmt.Println(currCorrespond)
+			fmt.Println(time.Since(t))
+		}
 	}
-	num := <-ch
-	ch <- int(math.Min(float64(num), float64(currCorrespond)))
+	ch <- localmin
 
-	// fmt.Println("final location:", currCorrespond)
-	if seed%1000000 == 0 {
-		fmt.Println(seed)
-		fmt.Println(time.Since(t))
-	}
 }
 
 func p1(input string) {

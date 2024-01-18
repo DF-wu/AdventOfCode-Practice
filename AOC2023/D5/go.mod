@@ -1,3 +1,3 @@
-module D5
+module d5
 
 go 1.21.4

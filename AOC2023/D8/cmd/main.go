@@ -1,3 +1,9 @@
+/*
+	Day 8
+	Author: DF
+	Date: 2024-01-25
+*/
+
 package main
 
 import (
